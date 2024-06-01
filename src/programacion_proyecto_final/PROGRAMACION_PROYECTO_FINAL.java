@@ -124,4 +124,124 @@ public class PROYECTO_FINAL extends JFrame {
             newTables[newTables.length - 1] = table;
             tables = newTables;
         }
+    } // Método para mostrar la interfaz de tabla hash 
+
+    private void showHashTableInterface() {
+        HashTableGUI hashTableGUI = new HashTableGUI();
+        hashTableGUI.setVisible(true);
     }
+
+    // Método para aplicar una fórmula a una celda específica
+    private void applyFormula() {
+        //Verificar la fórmula o la celda no pueden estar vacías
+        try {
+            String formula = formulaField.getText().trim();
+            String cell = cellField.getText().trim();
+            if (formula.isEmpty() || cell.isEmpty()) {
+                throw new Exception("La fórmula o la celda no pueden estar vacías.");
+            }
+
+            // Obtener la tabla seleccionada
+            int selectedTabIndex = tabbedPane.getSelectedIndex();
+            JTable selectedTable = tables[selectedTabIndex];
+
+            // Obtener fila y columna de la celda
+            int row = Integer.parseInt(cell.substring(1)) - 1;
+            int column = cell.charAt(0) - 'A';
+
+            // Evaluar la fórmula y establecer el resultado en la celda
+            double result = evaluateExpression(formula.substring(1)); // Eliminar el '='
+            selectedTable.setValueAt(result, row, column);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Error al aplicar la fórmula: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    // Método para evaluar una fórmula en una celda específica de una tabla
+    private void evaluateFormula(JTable table, int row, int column, String formula) {
+        try {
+            double result = evaluateExpression(formula.substring(1)); // Eliminar el '='
+            table.setValueAt(result, row, column);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Error al evaluar la fórmula: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    // Método para evaluar una expresión matemática dada
+    private double evaluateExpression(String expression) throws Exception {
+        String[] tokens = expression.split("(?=[-+*/])|(?<=[-+*/])");
+
+        double result = 0.0;
+        boolean firstToken = true;
+        String operator = "+";
+        for (String token : tokens) {
+            token = token.trim();
+            if (token.isEmpty()) {
+                continue; // Ignorar tokens vacíos
+            }
+
+            // Si el token es un operador, actualizar el operador actual
+            if (token.equals("+") || token.equals("-") || token.equals("*") || token.equals("/")) {
+                operator = token;
+            } else {
+                // Si el token es un número o una referencia a una celda, realizar la operación correspondiente
+                double value;
+                if (token.startsWith("Libro")) {
+                    // Si la referencia es a otra tabla (libro), obtener el valor de la celda en esa tabla
+                    String[] parts = token.split("!");
+                    int bookIndex = Integer.parseInt(parts[0].substring(5)) - 1;
+                    String cellReference = parts[1];
+                    value = getCellValue(bookIndex, cellReference);
+                } else {
+                    // Si no hay prefijo de libro, asumir que es del libro actual y obtener el valor de la celda
+                    value = getCellValue(tabbedPane.getSelectedIndex(), token);
+                }
+
+                // Realizar la operación según el operador actual
+                switch (operator) {
+                    case "+":
+                        result = firstToken ? value : result + value;
+                        break;
+                    case "-":
+                        result = firstToken ? value : result - value;
+                        break;
+                    case "*":
+                        result = firstToken ? value : result * value;
+                        break;
+                    case "/":
+                        result = firstToken ? value : result / value;
+                        break;
+                }
+                firstToken = false; // Cambiar el indicador para los siguientes tokens
+            }
+        }
+        return result; // Devolver el resultado final de la expresión
+    }
+
+    // Método para obtener el valor de una celda en una tabla específica
+    private double getCellValue(int bookIndex, String cellReference) throws Exception {
+        // Obtener fila y columna de la celda
+        int row = Integer.parseInt(cellReference.substring(1)) - 1;
+        int column = cellReference.charAt(0) - 'A';
+        // Obtener el valor de la celda en la tabla especificada
+        Object value = tables[bookIndex].getValueAt(row, column);
+        // Si el valor es nulo o vacío, lanzar una excepción
+        if (value == null || value.toString().isEmpty()) {
+            throw new Exception(String.format("La celda %s en Libro %d está vacía.", cellReference, bookIndex + 1));
+        }
+        // Convertir y devolver el valor como un número
+        return Double.parseDouble(value.toString());
+    }
+
+    // Método principal para iniciar la aplicación
+    public static void main(String[] args) {
+        // Ejecutar la aplicación en el hilo de despacho de eventos de Swing
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                // Crear una instancia de la clase PROYECTO_FINAL y hacerla visible
+                PROYECTO_FINAL app = new PROYECTO_FINAL();
+                app.setVisible(true);
+            }
+        });
+    }
+}
