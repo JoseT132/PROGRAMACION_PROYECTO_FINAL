@@ -124,8 +124,9 @@ public class PROYECTO_FINAL extends JFrame {
             newTables[newTables.length - 1] = table;
             tables = newTables;
         }
-    } // Método para mostrar la interfaz de tabla hash 
+    }
 
+    // Método para mostrar la interfaz de tabla hash 
     private void showHashTableInterface() {
         HashTableGUI hashTableGUI = new HashTableGUI();
         hashTableGUI.setVisible(true);
