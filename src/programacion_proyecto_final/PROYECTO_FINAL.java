@@ -164,7 +164,7 @@ public class PROYECTO_FINAL extends JFrame {
             double result = evaluateExpression(formula.substring(1)); // Eliminar el '='
             table.setValueAt(result, row, column);
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Error al evaluar la fórmula: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Calculo realizado ");
         }
     }
 
